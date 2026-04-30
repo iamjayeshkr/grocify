@@ -1,7 +1,9 @@
 import { create } from "zustand";
 import { Platform } from "react-native";
 
-// ✅ BASE URL
+// ========================
+// BASE URL
+// ========================
 const getBaseUrl = () => {
   if (Platform.OS === "android") {
     return "http://10.0.2.2:3000";
@@ -11,7 +13,9 @@ const getBaseUrl = () => {
 
 const BASE_URL = getBaseUrl();
 
+// ========================
 // TYPES
+// ========================
 export type GroceryCategory =
   | "Produce"
   | "Dairy"
@@ -21,11 +25,14 @@ export type GroceryCategory =
 
 export type GroceryPriority = "low" | "medium" | "high";
 
+export type GroceryUnit = "pcs" | "kg" | "gm" | "litre" | "ml";
+
 export type GroceryItem = {
   id: string;
   name: string;
   category: GroceryCategory;
   quantity: number;
+  unit: GroceryUnit;
   purchased: boolean;
   priority: GroceryPriority;
 };
@@ -35,12 +42,15 @@ export type CreateItemInput = {
   category: GroceryCategory;
   quantity: number;
   priority: string;
+  unit: GroceryUnit;
 };
 
 type ItemsResponse = { items: GroceryItem[] };
 type ItemResponse = { item: GroceryItem };
 
+// ========================
 // STORE TYPE
+// ========================
 type GroceryStore = {
   items: GroceryItem[];
   isLoading: boolean;
@@ -50,15 +60,20 @@ type GroceryStore = {
   addItem: (input: CreateItemInput) => Promise<GroceryItem | void>;
   removeItem: (id: string) => Promise<void>;
   togglePurchased: (id: string) => Promise<void>;
+  updateQuantity: (id: string, quantity: number) => Promise<void>;
 };
 
+// ========================
 // STORE
+// ========================
 export const useGroceryStore = create<GroceryStore>((set, get) => ({
   items: [],
   isLoading: false,
   error: null,
 
-  // ✅ LOAD ITEMS
+  // ========================
+  // LOAD ITEMS
+  // ========================
   loadItems: async () => {
     set({ isLoading: true, error: null });
 
@@ -81,7 +96,9 @@ export const useGroceryStore = create<GroceryStore>((set, get) => ({
     }
   },
 
-  // ✅ ADD ITEM
+  // ========================
+  // ADD ITEM
+  // ========================
   addItem: async (input) => {
     set({ error: null });
 
@@ -96,6 +113,7 @@ export const useGroceryStore = create<GroceryStore>((set, get) => ({
         category: input.category,
         quantity: Math.max(1, input.quantity),
         priority: input.priority.toLowerCase(),
+        unit: input.unit,
       };
 
       const res = await fetch(`${BASE_URL}/api/items`, {
@@ -125,7 +143,9 @@ export const useGroceryStore = create<GroceryStore>((set, get) => ({
     }
   },
 
-  // ✅ REMOVE ITEM
+  // ========================
+  // REMOVE ITEM
+  // ========================
   removeItem: async (id) => {
     try {
       await fetch(`${BASE_URL}/api/items/${id}`, {
@@ -140,7 +160,9 @@ export const useGroceryStore = create<GroceryStore>((set, get) => ({
     }
   },
 
-  // ✅ TOGGLE PURCHASED
+  // ========================
+  // TOGGLE PURCHASED
+  // ========================
   togglePurchased: async (id) => {
     const item = get().items.find((i) => i.id === id);
     if (!item) return;
@@ -171,6 +193,39 @@ export const useGroceryStore = create<GroceryStore>((set, get) => ({
       }));
     } catch (err) {
       console.error("❌ Toggle error:", err);
+    }
+  },
+
+  // ========================
+  // UPDATE QUANTITY
+  // ========================
+  updateQuantity: async (id, quantity) => {
+    try {
+      const res = await fetch(`${BASE_URL}/api/items/${id}`, {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          quantity: Math.max(1, quantity),
+        }),
+      });
+
+      if (!res.ok) {
+        const text = await res.text();
+        console.log("❌ Server error:", text);
+        throw new Error("Update failed");
+      }
+
+      const data = (await res.json()) as ItemResponse;
+
+      set((state) => ({
+        items: state.items.map((item) =>
+          item.id === id ? data.item : item
+        ),
+      }));
+    } catch (err) {
+      console.error("❌ Quantity update error:", err);
     }
   },
 }));

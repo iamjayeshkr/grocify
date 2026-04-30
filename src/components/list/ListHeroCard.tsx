@@ -22,7 +22,7 @@ const ListHeroCard = () => {
         {pendingCount} pending · {completedCount} completed
       </Text>
 
-      <View className="mt-4 overflow-hidden rounded-full bg-white/50">
+      <View className="mt-4 overflow-hidden rounded-full ">
         <View className="h-2 rounded-full bg-secondary" style={{ width: `${completionRate}%` }} />
       </View>
     </View>

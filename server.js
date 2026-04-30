@@ -6,16 +6,21 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
+// 🔥 In-memory storage
 let items = [];
 
-// GET all items
+// ========================
+// GET ALL ITEMS
+// ========================
 app.get("/api/items", (req, res) => {
   res.json({ items });
 });
 
-// ADD item
+// ========================
+// ADD ITEM
+// ========================
 app.post("/api/items", (req, res) => {
-  const { name, category, quantity, priority } = req.body;
+  const { name, category, quantity, priority, unit } = req.body;
 
   if (!name) {
     return res.status(400).json({ error: "Name required" });
@@ -26,6 +31,7 @@ app.post("/api/items", (req, res) => {
     name,
     category,
     quantity,
+    unit: unit || "pcs", // 🔥 FIXED
     priority,
     purchased: false,
   };
@@ -35,13 +41,20 @@ app.post("/api/items", (req, res) => {
   res.json({ item: newItem });
 });
 
-// DELETE
+// ========================
+// DELETE ITEM
+// ========================
 app.delete("/api/items/:id", (req, res) => {
   const { id } = req.params;
+
   items = items.filter((item) => item.id !== id);
+
   res.json({ success: true });
 });
 
+// ========================
+// UPDATE ITEM
+// ========================
 app.patch("/api/items/:id", (req, res) => {
   const { id } = req.params;
   const { purchased, quantity } = req.body;
@@ -52,7 +65,6 @@ app.patch("/api/items/:id", (req, res) => {
     return res.status(404).json({ error: "Item not found" });
   }
 
-  // update fields safely
   if (purchased !== undefined) {
     items[index].purchased = purchased;
   }
@@ -64,7 +76,9 @@ app.patch("/api/items/:id", (req, res) => {
   res.json({ item: items[index] });
 });
 
+// ========================
 // START SERVER
+// ========================
 app.listen(3000, "0.0.0.0", () => {
   console.log("✅ Backend running at http://0.0.0.0:3000");
 });

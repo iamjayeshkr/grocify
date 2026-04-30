@@ -6,6 +6,9 @@ import { Pressable, Text, TextInput, View } from "react-native";
 const categories: GroceryCategory[] = ["Produce", "Dairy", "Bakery", "Pantry", "Snacks"];
 const priorities: GroceryPriority[] = ["low", "medium", "high"];
 
+// 🔥 NEW: Units
+const units = ["pcs", "kg", "gm", "litre", "ml"];
+
 const categoryIcons = {
   Produce: "leaf",
   Dairy: "cow",
@@ -19,13 +22,13 @@ const PlannerFormCard = () => {
 
   const [name, setName] = useState("");
   const [quantity, setQuantity] = useState("1");
+  const [unit, setUnit] = useState("pcs"); // 🔥 NEW
   const [category, setCategory] = useState<GroceryCategory>("Produce");
   const [priority, setPriority] = useState<GroceryPriority>("medium");
 
   const canCreate = name.trim().length > 0;
 
   const handleQuantityChange = (value: string) => {
-    // this regex is used to remove all non-numeric characters from the input
     setQuantity(value.replace(/[^0-9]/g, ""));
   };
 
@@ -35,14 +38,13 @@ const PlannerFormCard = () => {
       category,
       priority,
       quantity: Number(quantity),
+      unit, // 🔥 NEW
     });
 
-    // optional
-    // Alert.alert("Success", "Item created");
-
-    // reset our form
+    // reset form
     setName("");
     setQuantity("1");
+    setUnit("pcs"); // 🔥 reset
     setCategory("Produce");
     setPriority("medium");
   };
@@ -56,24 +58,52 @@ const PlannerFormCard = () => {
         <TextInput
           value={name}
           onChangeText={setName}
-          placeholder="Ex: Blueberries"
+          placeholder="Ex: Rice, Milk"
           className="ml-3 flex-1 text-base text-foreground"
           placeholderTextColor="#8aa397"
         />
       </View>
 
-      {/* QUANTITY */}
+      {/* 🔥 QUANTITY + UNIT */}
       <Text className="mt-4 text-sm font-semibold text-foreground">Quantity</Text>
-      <View className="mt-2 flex-row items-center rounded-2xl border border-border bg-muted px-4 py-3">
-        <FontAwesome6 name="hashtag" size={13} color="#5b7567" />
-        <TextInput
-          value={quantity}
-          onChangeText={handleQuantityChange}
-          keyboardType="number-pad"
-          placeholder="1"
-          placeholderTextColor="#8aa397"
-          className="ml-3 flex-1 text-base text-foreground"
-        />
+
+      <View className="mt-2 grid gap-4 items-center">
+        {/* Quantity Input */}
+        <View className="flex-1 flex-row items-center rounded-2xl border border-border bg-muted px-4 py-3 h-20 w-full">
+          <FontAwesome6 name="hashtag" size={13} color="#5b7567" />
+          <TextInput
+            value={quantity}
+            onChangeText={handleQuantityChange}
+            keyboardType="number-pad"
+            placeholder="1"
+            placeholderTextColor="#8aa397"
+            className="ml-3 flex-1 text-base text-foreground"
+          />
+        </View>
+
+        {/* Unit Selector */}
+        <View className="flex flex-row items-center gap-2 ">
+          {units.map((u) => {
+            const active = u === unit;
+            return (
+              <Pressable
+                key={u}
+                onPress={() => setUnit(u)}
+                className={`rounded-full px-5 py-3 ${
+                  active ? "bg-primary" : "bg-secondary"
+                }`}
+              >
+                <Text
+                  className={`text-xs font-semibold ${
+                    active ? "text-white" : "text-secondary-foreground"
+                  }`}
+                >
+                  {u}
+                </Text>
+              </Pressable>
+            );
+          })}
+        </View>
       </View>
 
       {/* CATEGORIES */}
@@ -111,7 +141,9 @@ const PlannerFormCard = () => {
       <View className="mt-2 flex-row gap-2">
         {priorities.map((option) => {
           const active = option === priority;
-          const icon = option === "high" ? "bolt" : option === "medium" ? "compass" : "seedling";
+          const icon =
+            option === "high" ? "bolt" : option === "medium" ? "compass" : "seedling";
+
           return (
             <Pressable
               key={option}
@@ -133,6 +165,7 @@ const PlannerFormCard = () => {
         })}
       </View>
 
+      {/* ADD BUTTON */}
       <Pressable
         className={`mt-5 flex-row items-center justify-center rounded-2xl py-3 ${
           canCreate ? "bg-primary" : "bg-muted"
@@ -150,6 +183,7 @@ const PlannerFormCard = () => {
         </Text>
       </Pressable>
 
+      {/* ERROR */}
       {error ? (
         <View className="mt-3 rounded-2xl border border-destructive bg-destructive px-3 py-2">
           <Text className="text-sm text-white text-center uppercase">{error}</Text>
@@ -158,4 +192,5 @@ const PlannerFormCard = () => {
     </View>
   );
 };
+
 export default PlannerFormCard;
