@@ -1,56 +1,41 @@
 {
   "expo": {
-    "name": "grocify",
+    "name": "Grocify",
     "slug": "grocify",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/images/icon.png",
+    "icon": "./assets/icon.png",
     "scheme": "grocify",
     "userInterfaceStyle": "automatic",
-    "ios": {
-      "icon": "./assets/expo.icon",
-      "bundleIdentifier": "com.devburakork.grocify"
-    },
     "android": {
+      "package": "com.devburakork.grocify",
+      "versionCode": 1,
       "adaptiveIcon": {
-        "backgroundColor": "#E6F4FE",
-        "foregroundImage": "./assets/images/android-icon-foreground.png",
-        "backgroundImage": "./assets/images/android-icon-background.png",
-        "monochromeImage": "./assets/images/android-icon-monochrome.png"
-      },
-      "predictiveBackGestureEnabled": false,
-      "package": "com.devburakork.grocify"
+        "foregroundImage": "./assets/icon.png",
+        "backgroundColor": "#0f172a"
+      }
     },
     "web": {
-      "output": "server",
-      "favicon": "./assets/images/favicon.png"
+      "favicon": "./assets/icon.png"
     },
     "plugins": [
-      "@clerk/expo",
       "expo-router",
+      "expo-web-browser",
       [
         "expo-splash-screen",
         {
-          "backgroundColor": "#208AEF",
-          "android": {
-            "image": "./assets/images/splash-icon.png",
-            "imageWidth": 76
-          }
-        }
-      ],
-      "expo-web-browser",
-      [
-        "@sentry/react-native/expo",
-        {
-          "url": "https://sentry.io/",
-          "project": "grocify",
-          "organization": "codesistency-gs"
+          "backgroundColor": "#208AEF"
         }
       ]
     ],
     "experiments": {
-      "typedRoutes": true,
-      "reactCompiler": true
+      "typedRoutes": true
+    },
+    "extra": {
+      "router": {},
+      "eas": {
+        "projectId": "4d57900b-2f60-4301-9306-d595fd6bcca1"
+      }
     }
   }
 }
