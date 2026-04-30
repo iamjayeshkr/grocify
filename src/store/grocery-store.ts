@@ -1,21 +1,17 @@
 import { create } from "zustand";
 import { Platform } from "react-native";
 
-// 🔥 AUTO FIX BASE URL
+// ✅ BASE URL
 const getBaseUrl = () => {
   if (Platform.OS === "android") {
-    // Android emulator
     return "http://10.0.2.2:3000";
   }
-  // iOS simulator works with localhost
   return "http://localhost:3000";
 };
 
-// 👉 IF USING REAL PHONE → replace manually:
-// return "http://192.168.X.X:3000";
-
 const BASE_URL = getBaseUrl();
 
+// TYPES
 export type GroceryCategory =
   | "Produce"
   | "Dairy"
@@ -38,21 +34,26 @@ export type CreateItemInput = {
   name: string;
   category: GroceryCategory;
   quantity: number;
-  priority: string; // UI value (Low/Medium/High)
+  priority: string;
 };
 
 type ItemsResponse = { items: GroceryItem[] };
 type ItemResponse = { item: GroceryItem };
 
+// STORE TYPE
 type GroceryStore = {
   items: GroceryItem[];
   isLoading: boolean;
   error: string | null;
+
   loadItems: () => Promise<void>;
   addItem: (input: CreateItemInput) => Promise<GroceryItem | void>;
+  removeItem: (id: string) => Promise<void>;
+  togglePurchased: (id: string) => Promise<void>;
 };
 
-export const useGroceryStore = create<GroceryStore>((set) => ({
+// STORE
+export const useGroceryStore = create<GroceryStore>((set, get) => ({
   items: [],
   isLoading: false,
   error: null,
@@ -62,8 +63,6 @@ export const useGroceryStore = create<GroceryStore>((set) => ({
     set({ isLoading: true, error: null });
 
     try {
-      console.log("📡 Fetching:", `${BASE_URL}/api/items`);
-
       const res = await fetch(`${BASE_URL}/api/items`);
 
       if (!res.ok) {
@@ -96,10 +95,8 @@ export const useGroceryStore = create<GroceryStore>((set) => ({
         name: input.name.trim(),
         category: input.category,
         quantity: Math.max(1, input.quantity),
-        priority: input.priority.toLowerCase(), // 🔥 FIX
+        priority: input.priority.toLowerCase(),
       };
-
-      console.log("📤 Sending:", body);
 
       const res = await fetch(`${BASE_URL}/api/items`, {
         method: "POST",
@@ -125,6 +122,55 @@ export const useGroceryStore = create<GroceryStore>((set) => ({
     } catch (err) {
       console.error("❌ Add error:", err);
       set({ error: "Failed to add item" });
+    }
+  },
+
+  // ✅ REMOVE ITEM
+  removeItem: async (id) => {
+    try {
+      await fetch(`${BASE_URL}/api/items/${id}`, {
+        method: "DELETE",
+      });
+
+      set((state) => ({
+        items: state.items.filter((item) => item.id !== id),
+      }));
+    } catch (err) {
+      console.error("❌ Remove error:", err);
+    }
+  },
+
+  // ✅ TOGGLE PURCHASED
+  togglePurchased: async (id) => {
+    const item = get().items.find((i) => i.id === id);
+    if (!item) return;
+
+    try {
+      const res = await fetch(`${BASE_URL}/api/items/${id}`, {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          purchased: !item.purchased,
+        }),
+      });
+
+      if (!res.ok) {
+        const text = await res.text();
+        console.log("❌ Server error:", text);
+        throw new Error("Update failed");
+      }
+
+      const data = (await res.json()) as ItemResponse;
+
+      set((state) => ({
+        items: state.items.map((i) =>
+          i.id === id ? data.item : i
+        ),
+      }));
+    } catch (err) {
+      console.error("❌ Toggle error:", err);
     }
   },
 }));
