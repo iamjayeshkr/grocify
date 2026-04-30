@@ -5,10 +5,19 @@ import { Platform } from "react-native";
 // BASE URL
 // ========================
 const getBaseUrl = () => {
-  if (Platform.OS === "android") {
-    return "http://10.0.2.2:3000";
+  // 🔥 PRODUCTION (after deploy)
+  const PROD_URL = "https://grocify.onrender.com";
+
+  // 🔧 DEVELOPMENT (local testing)
+  if (__DEV__) {
+    if (Platform.OS === "android") {
+      return "http://10.0.2.2:3000";
+    }
+    return "http://localhost:3000";
   }
-  return "http://localhost:3000";
+
+  // 🚀 APK / Production
+  return PROD_URL;
 };
 
 const BASE_URL = getBaseUrl();

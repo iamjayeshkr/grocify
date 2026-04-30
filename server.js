@@ -76,9 +76,18 @@ app.patch("/api/items/:id", (req, res) => {
   res.json({ item: items[index] });
 });
 
+// =======================
+//   TESTING
+app.get("/", (req, res) => {
+  res.send("🚀 Grocify API is running");
+});
+// =======================
+
 // ========================
 // START SERVER
 // ========================
-app.listen(3000, "0.0.0.0", () => {
-  console.log("✅ Backend running at http://0.0.0.0:3000");
+const PORT = process.env.PORT || 3000;
+
+app.listen(PORT, "0.0.0.0", () => {
+  console.log(`✅ Server running on port ${PORT}`);
 });
